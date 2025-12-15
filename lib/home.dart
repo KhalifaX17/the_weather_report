@@ -49,7 +49,11 @@ class _HomeState extends State<Home> {
             final longitude = snapshot.data!.longitude.toStringAsFixed(3);
 
             children.add(
-              const Icon(Icons.pin_drop, color: Colors.green, size: 40),
+              const Icon(
+                Icons.pin_drop,
+                color: Color.fromARGB(255, 6, 82, 6),
+                size: 40,
+              ),
             );
             children.add(const SizedBox(height: 12));
             children.add(
