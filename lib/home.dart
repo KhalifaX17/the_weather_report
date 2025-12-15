@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
 
 class Home extends StatefulWidget {
@@ -9,7 +10,13 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  // ===== ขอพิกัดตำแหน่ง =====
+  @override
+  void initState() {
+    super.initState();
+    dotenv.load();
+    (fileName: "lib/.env");
+  }
+
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -28,61 +35,33 @@ class _HomeState extends State<Home> {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      return Future.error('Location permissions are permanently denied');
+      return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
     }
 
     return await Geolocator.getCurrentPosition();
   }
 
-  // ===== UI =====
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Weather Report'), centerTitle: true),
-      body: FutureBuilder<Position>(
+      appBar: AppBar(title: const Text('Weather Report')),
+      body: FutureBuilder(
         future: _determinePosition(),
-        builder: (context, snapshot) {
-          List<Widget> children = [];
-
-          if (snapshot.hasData) {
-            final latitude = snapshot.data!.latitude.toStringAsFixed(3);
-            final longitude = snapshot.data!.longitude.toStringAsFixed(3);
-
-            children.add(
-              const Icon(
-                Icons.pin_drop,
-                color: Color.fromARGB(255, 6, 82, 6),
-                size: 40,
-              ),
-            );
-            children.add(const SizedBox(height: 12));
-            children.add(
-              Text('Latitude: $latitude', style: const TextStyle(fontSize: 18)),
-            );
-            children.add(
-              Text(
-                'Longitude: $longitude',
-                style: const TextStyle(fontSize: 18),
-              ),
-            );
-          } else if (snapshot.hasError) {
-            children.add(const Icon(Icons.error, color: Colors.red, size: 40));
-            children.add(const SizedBox(height: 12));
-            children.add(
-              Text(snapshot.error.toString(), textAlign: TextAlign.center),
-            );
+        builder: (context, snapsot) {
+          List<Widget> list = [];
+          var data = snapsot.data!;
+          list.add(Text("lat: ${data.latitude}"));
+          list.add(Text("lon: ${data.longitude}"));
+          if (snapsot.hasData) {
+          } else if (snapsot.hasError) {
+            list.add(Text('Error'));
+            list.add(Text(snapsot.error.toString()));
           } else {
-            children.add(const CircularProgressIndicator());
-            children.add(const SizedBox(height: 12));
-            children.add(const Text('Waiting...'));
+            list.add(Text("please wait..."));
           }
-
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: children,
-            ),
-          );
+          return Column(children: list);
         },
       ),
     );
